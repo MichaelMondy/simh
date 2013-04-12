@@ -23,6 +23,10 @@
    used in advertising or otherwise to promote the sale, use or other dealings
    in this Software without prior written authorization from Robert M Supnik.
 
+   10-Dec-12    MM      Pass rptr to fprint_sym to allow output to be tailored
+                        to the specific register such as displaying a condition
+                        register as flag names.  Allow quoted sequences in command
+                        input as a single token.
    20-Mar-12    MP      Fixes to "SHOW <x> SHOW" commands
    06-Jan-12    JDB     Fixed "SHOW DEVICE" with only one enabled unit (Dave Bryan)  
    25-Sep-11    MP      Added the ability for a simulator built with 
@@ -4547,7 +4551,10 @@ GET_RADIX (rdx, rptr->radix);
 if ((rptr->flags & REG_VMAD) && sim_vm_fprint_addr)
     sim_vm_fprint_addr (ofile, sim_dflt_dev, (t_addr) val);
 else if (!(rptr->flags & REG_VMIO) ||
-    (fprint_sym (ofile, rdx, &val, NULL, sim_switches | SIM_SW_REG) > 0)) {
+    // Pass the rptr to fprint_sym instead of a NULL uptr.
+    // Otherwise, fprint_sym has no way to provide output tailored to
+    // a specifc register (e.g. displaying a conditions register as flags).
+    (fprint_sym (ofile, rdx, &val, (void*) rptr, sim_switches | SIM_SW_REG) > 0)) {
         fprint_val (ofile, val, rdx, rptr->width, rptr->flags & REG_FMT);
         if (rptr->fields) {
             fprintf (ofile, "\t");
